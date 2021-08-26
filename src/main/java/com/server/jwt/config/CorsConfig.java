@@ -19,7 +19,7 @@ public class CorsConfig {
         config.addAllowedHeader("*");//모든 header의 응답을 허용하겠다.
         config.addAllowedMethod("*");//모든 get,post등등 허용하겠따.
         config.setExposedHeaders(Arrays.asList("Access-Control-Allow-Headers", "Authorization, x-xsrf-token, Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, " +
-                "Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers"));
+                "Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers,RefreshToken"));
         source.registerCorsConfiguration("/api/**",config);
         source.registerCorsConfiguration("/*",config);
         return new CorsFilter(source);

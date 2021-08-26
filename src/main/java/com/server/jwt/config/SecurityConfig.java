@@ -2,6 +2,7 @@ package com.server.jwt.config;
 
 import com.server.jwt.Mapper.UserMapper;
 import com.server.jwt.config.filter.MyFilter1;
+import com.server.jwt.config.jwt.JWTmaker;
 import com.server.jwt.config.jwt.JwtAuthenticationFilter;
 import com.server.jwt.config.jwt.JwtAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final CorsConfig corsConfig;
     private final UserMapper userMapper;
+    private final JWTmaker jwTmaker;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -38,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(corsConfig.corsFilter())//인증이 필요할때는 걸어야 한다.
                 .formLogin().disable()//로그인 페이지 안쓴다.
                 .httpBasic().disable()//
-                .addFilter(new JwtAuthenticationFilter(authenticationManager()))//AuthenticationManager을 파라미터로 줘야함.
+                .addFilter(new JwtAuthenticationFilter(authenticationManager(),jwTmaker))//AuthenticationManager을 파라미터로 줘야함.
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(),userMapper))
                 .authorizeRequests()
                 .antMatchers("/api/v1/user/**")

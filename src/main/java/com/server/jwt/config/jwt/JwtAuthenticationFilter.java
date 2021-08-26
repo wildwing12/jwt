@@ -2,15 +2,21 @@ package com.server.jwt.config.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.Claim;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.jwt.config.auth.PrincipalDetail;
 import com.server.model.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -18,6 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 //스프링 시큐리티에서 UsernamePasswordAuthenticationFilter가 있음.
 // /login 요청에서  username이나 passowrd를 전송하면
@@ -25,6 +33,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
+    private final JWTmaker jwTmaker;
 
 
 
@@ -68,20 +77,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         PrincipalDetail principalDetail = (PrincipalDetail) authResult.getPrincipal();
         //hash 암호 방식
         //HMAC512는 비밀키가 있어야한다.
-        String jwtToken = JWT.create()
-                .withSubject("cos토큰")
-                .withExpiresAt(new Date(System.currentTimeMillis() +(60000)*10))
-                .withClaim("id",principalDetail.getUser().getId())//아무값넣어도됨
-                .withClaim("username",principalDetail.getUser().getUsername())//아무값 넣어도됨.
-                .sign(Algorithm.HMAC512("cos"));//cos는 비밀값을 넣어야한다.
+        String jwtToken = jwTmaker.JWTToken(authResult);
         response.addHeader("Authorization","Bearer "+jwtToken);
 
-        String RefreshToken = JWT.create()
-                .withSubject("cos토큰")
-                .withExpiresAt(new Date(System.currentTimeMillis()+60*60*24*1000))
-                .withClaim("id",principalDetail.getUser().getId())
-                .withClaim("username",principalDetail.getUser().getUsername())//아무값 넣어도됨.
-                .sign(Algorithm.HMAC512("cos"));
+        String RefreshToken = jwTmaker.RefreshToken(authResult);
         response.addHeader("RefreshToken",RefreshToken);
     }
+
+
+
+
 }
